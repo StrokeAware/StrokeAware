@@ -1,0 +1,174 @@
+
+.form-container {
+    position: relative;
+    width: 800px; /* Match image size */
+  }
+  
+  .form-background {
+    width: 100%;
+    height: auto;
+  }
+  
+  .overlay {
+    position: absolute;
+    font-family: "sans-serif";
+    font-size: 16px;
+    color: black;
+  }
+  
+  /* Adjust these top/left pixel positions by testing */
+  .name {
+    top: 233px;
+    left: 90px;
+  }
+  
+  .surname {
+    top: 233px;
+    left: 285px;
+  }
+  
+  .birthDate {
+    top: 233px;
+    left: 575px;
+  }
+  
+  .age {
+    top: 263px;
+    left: 87px;
+  }
+  
+  .idcard-digit {
+    position: absolute;
+    font-family: 'Kanit', sans-serif; /* or Prompt if you want */
+    font-size: 16px;
+    color: black;
+  }
+  
+  /* Position each ID card number */
+  .idcard-0 { top: 271px; left: 303px; }
+  .idcard-1 { top: 271px; left: 340px; }
+  .idcard-2 { top: 271px; left: 366px; }
+  .idcard-3 { top: 271px; left: 392px; }
+  .idcard-4 { top: 271px; left: 418px; }
+  .idcard-5 { top: 271px; left: 463px; }
+  .idcard-6 { top: 271px; left: 489px; }
+  .idcard-7 { top: 271px; left: 515px; }
+  .idcard-8 { top: 271px; left: 541px; }
+  .idcard-9 { top: 271px; left: 567px; }
+  .idcard-10 { top: 271px; left: 607px; }
+  .idcard-11 { top: 271px; left: 633px; }
+  .idcard-12 { top: 271px; left: 668px; }
+  
+  
+  .gender {
+    top: 291px;
+    left: 120px;
+  }
+  
+  .disease {
+    top: 291px;
+    left: 380px;
+  }
+  
+  .phone {
+    top: 291px;
+    left: 600px;
+  }
+  
+  .formDate {
+    top: 378px;
+    left: 180px;
+  }
+  
+  .formTime {
+    top: 378px;
+    left: 340px;
+  }
+    .TimeFactor {
+    top: 695px;
+    left: 310px; /* "ไม่มี" column for row 1 */
+  }
+
+  /* BEFAST checkbox mimic */
+  .checkbox {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    position: absolute;
+  }
+  
+  .balance-yes {
+    top: 540px;
+    left: 315px;
+  }
+  .balance-no {
+    top: 540px;
+    left: 390px;
+  }  
+  .eye-yes {
+    top: 566px;
+    left: 315px;
+  }
+  .eye-no {
+    top: 566px;
+    left: 390px;
+  }  
+  .face-yes {
+    top: 592px;
+    left: 315px;
+  }
+  .face-no {
+    top: 592px;
+    left: 390px;
+  }  
+  .arm-yes {
+    top: 617px;
+    left: 315px; /* "มี" for row 1 */
+  }
+  .arm-no {
+    top: 617px;
+    left: 390px; /* "ไม่มี" column for row 1 */
+  }
+  .speech-yes {
+    top: 653px;
+    left: 390px;
+  }
+  .speech-no {
+    top: 653px;
+    left: 390px;
+  }
+  
+  .Downloadbtn {
+    width: 200px ;
+    height: 50px;
+    margin-left: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 50px;
+    font-family: "Prompt";
+    color: white;
+    background-color: #8961df;
+    transition: all 0.1s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .Downloadbtn:active{
+    transform: scale(0.92);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.Search {
+    width: 60px ;
+    height: 50px;
+    border: none;
+    border-radius: 50px;
+    font-family: "Prompt";
+    color: white;
+    background-color: #8961df;
+    transition: all 0.1s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+.Search:active{
+    transform: scale(0.62);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}

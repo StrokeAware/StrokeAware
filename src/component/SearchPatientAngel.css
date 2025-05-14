@@ -1,0 +1,169 @@
+
+.form-container {
+    position: relative;
+    width: 800px; /* Match image size */
+  }
+  
+  .form-background {
+    width: 100%;
+    height: auto;
+  }
+  
+  .overlay {
+    position: absolute;
+    font-family: "sans-serif";
+    font-size: 16px;
+    color: black;
+  }
+  
+  /* Adjust these top/left pixel positions by testing */
+  .name {
+    top: 229px;
+    left: 90px;
+  }
+  
+  .surname {
+    top: 229px;
+    left: 285px;
+  }
+  
+  .age {
+    top: 259px;
+    left: 87px;
+  }
+  
+  .idcard-digit {
+    position: absolute;
+    font-family: 'Kanit', sans-serif; /* or Prompt if you want */
+    font-size: 16px;
+    color: black;
+  }
+  
+  /* Position each ID card number */
+  .idcard-0 { top: 265px; left: 294px; }
+  .idcard-1 { top: 265px; left: 331px; }
+  .idcard-2 { top: 265px; left: 355px; }
+  .idcard-3 { top: 265px; left: 383px; }
+  .idcard-4 { top: 265px; left: 408px; }
+  .idcard-5 { top: 265px; left: 451px; }
+  .idcard-6 { top: 265px; left: 477px; }
+  .idcard-7 { top: 265px; left: 504px; }
+  .idcard-8 { top: 265px; left: 532px; }
+  .idcard-9 { top: 265px; left: 558px; }
+  .idcard-10 { top: 265px; left: 597px; }
+  .idcard-11 { top: 265px; left: 624px; }
+  .idcard-12 { top: 265px; left: 656px; }
+  
+  
+  .gender {
+    top: 287px;
+    left: 120px;
+  }
+  
+  .disease {
+    top: 312px;
+    left: 380px;
+  }
+  
+  .phone {
+    top: 287px;
+    left: 280px;
+  }
+  
+  .formDate {
+    top: 398px;
+    left: 180px;
+  }
+  
+  .formTime {
+    top: 398px;
+    left: 360px;
+  }
+    .TimeFactor {
+    top: 725px;
+    left: 464px; 
+  }
+
+  /* Assessment */
+  .checkbox {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    position: absolute;
+  }
+  
+  .angel-balance-yes {
+    top: 570px;
+    left: 470px;
+  }
+  .angel-balance-no {
+    top: 570px;
+    left: 545px;
+  }  
+  .angel-eye-yes {
+    top: 596px;
+    left: 470px;
+  }
+  .angel-eye-no {
+    top: 596px;
+    left: 545px;
+  }  
+  .angel-face-yes {
+    top: 621px;
+    left: 470px;
+  }
+  .angel-face-no {
+    top: 621px;
+    left: 545px;
+  }  
+  .angel-arm-yes {
+    top: 647px;
+    left: 470px;
+  }
+  .angel-arm-no {
+    top: 647px;
+    left: 545px;
+  }
+  .angel-speech-yes {
+    top: 683px;
+    left: 470px;
+  }
+  .angel-speech-no {
+    top: 683px;
+    left: 545px;
+  }
+  
+  .Downloadbtn {
+    width: 200px ;
+    height: 50px;
+    margin-left: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 50px;
+    font-family: "Prompt";
+    color: white;
+    background-color: #8961df;
+    transition: all 0.1s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .Downloadbtn:active{
+    transform: scale(0.92);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.Search {
+    width: 60px ;
+    height: 50px;
+    border: none;
+    border-radius: 50px;
+    font-family: "Prompt";
+    color: white;
+    background-color: #8961df;
+    transition: all 0.1s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+.Search:active{
+    transform: scale(0.62);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
