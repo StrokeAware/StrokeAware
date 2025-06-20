@@ -1,13 +1,44 @@
+.main-overlay-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-controls {
+  width: 100%;
+  margin-bottom: 25px;
+  /* No centering here */
+}
+.top-controls .search-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 80px; /* adjust as you need */
+  margin-top: 18px;
+}
+
+.top-controls input[type="text"] {
+  padding: 8px;
+  width: 300px;
+  border-radius: 25px;
+  font-family: "Prompt";
+}
+.center-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .form-container {
-    position: relative;
-    width: 800px; /* Match image size */
-  }
-  
+  position: relative;
+  /* adjust width/height as you want */
+  margin: 0 auto;
+}
   .form-background {
-    width: 100%;
-    height: auto;
-  }
+  display: block;
+  margin: 0 auto;
+}
   
   .overlay {
     position: absolute;
@@ -147,6 +178,17 @@
     transition: all 0.1s ease;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   }
+
+  .result-text {
+  position: absolute;
+  left: 232px;
+  top: 758px; /* adjust to fit your form design */
+  font-size: 17px;
+  font-weight: bold;
+  color: red;
+  /* Add more styling as you need */
+}
+
 
   .Downloadbtn:active{
     transform: scale(0.92);

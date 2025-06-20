@@ -114,7 +114,7 @@ export function BEFAST_MAIN_TIME() {
                 B E F A S T
             </div>
             <div className="StrokeAwareTopRight">
-                Stroke Aware
+                Stroke Sight
                 <img src={plus} style={{ marginLeft: "20px", marginBottom: "2px" }} />
             </div>
             <div className="d-flex justify-content-center gap-4 mt-4 BoxContainer">

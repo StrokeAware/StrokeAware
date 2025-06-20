@@ -46,6 +46,7 @@
     justify-content: center;
     align-items: center;
     font-family: 'Prompt';
+    max-width: 1200px;
     font-weight: 600;
     font-size: 55px;
     color: #166989;
@@ -609,7 +610,6 @@
 .insideDetail {
     font-size: 20px;
     font-family: "Prompt";
-    margin-top: 30px;
     margin-left: 16px;
     width: 940px;
 }
@@ -704,18 +704,29 @@
 }
 
 .imagecomponentright4 {
-    margin-left: 18%;
-    width: 220px;
+    margin-left: 30%;
+    width: 200px;
     height: auto;
     mask-image: linear-gradient(
     to left, 
-    rgb(0, 0, 0) 50%,   
+    rgb(0, 0, 0) 100%,   
     rgba(0,0,0,0) 100%
   );
 }
 .imagecomponentright5 {
     margin-left: 60%;
     width: 60px;
+    height: auto;
+    mask-image: linear-gradient(
+    to left, 
+    rgb(0, 0, 0) 100%,   
+    rgba(0,0,0,0) 100%
+  );
+}
+.imagecomponentright3 {
+    margin-left: 59%;
+    margin-top: -20px;
+    width: 90px;
     height: auto;
     mask-image: linear-gradient(
     to left, 
@@ -818,6 +829,13 @@
     margin-top: 20px;
     margin-left: 30px;
     width: 80%;
+    height: auto;
+    display: block;
+}
+.centerpictureMAINEYE {
+    margin-top: 20px;
+    margin-left: -30px;
+    width: 120%;
     height: auto;
     display: block;
 }
@@ -1047,6 +1065,18 @@
     cursor: pointer;
     z-index: 1000;
   }
+  .ismutepicEYE {
+    position: absolute;
+    top: 53px;
+    right: 35px;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1000;
+  }
   
   
   
@@ -1247,25 +1277,6 @@ body {
     }
 }
 
-@media (max-width: 1210px) {
-    .Top-2 {
-        font-size: 45px;
-        margin-top: 10px;
-    }
-  }
-
-@media (max-width: 510px) {
-    .Top-2 {
-        margin-top: 10px;
-        font-size: 31px;
-    }
-}
-@media (max-width: 400px) {
-    .Top-2 {
-        margin-top: 10px;
-        font-size: 31px;
-    }
-}
 
 @media (max-width: 600px) {
     .input-email1 {
@@ -1398,8 +1409,8 @@ body {
     .imagecomponentright1,
     .imagecomponentright2,
     .imagecomponentright3,
-    .imagecomponentright4
-    .imagecomponentright5 {
+    .imagecomponentright4,
+    .imagecomponentright5{
         display: none !important; 
     }
     

@@ -60,7 +60,9 @@ const StrokeFormOverlay = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: "Prompt"}}>
+  <div className="main-overlay-container" style={{ fontFamily: "Prompt" }}>
+    {/* Top controls: do not center */}
+    <div className="top-controls">
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         <Link to={'/Inform'} className='BackButton'>
           <img src={Back} alt="Back" />
@@ -68,74 +70,91 @@ const StrokeFormOverlay = () => {
         <h2 style={{ margin: 0 }}>🔍 ค้นหาผู้ป่วยและผลการประเมิน</h2>
       </div>
 
-      <Link to='/Inform' className='StrokeAwareTopRight'><img src={StrokeAwareButton}></img></Link>
+      <Link to='/Inform' className='StrokeAwareTopRight'>
+        <img src={StrokeAwareButton} alt="Stroke Aware" />
+      </Link>
 
-      <input
-        type="text"
-        value={idCardInput}
-        onChange={(e) => setIdCardInput(e.target.value)}
-        placeholder="ใส่เลขบัตรประชาชน 13 หลัก"
-        style={{
-          marginLeft: "100px",
-          padding: '8px',
-          width: '300px',
-          marginRight: '10px',
-          borderRadius: "25px",
-          fontFamily: "Prompt"
-        }}
-      />
-      <button onClick={handleSearch} className='Search'>
-        ค้นหา
-      </button>
-
-      {patientData && (
-        <>
+      <div className="search-bar-actions">
+        <input
+          type="text"
+          value={idCardInput}
+          onChange={(e) => setIdCardInput(e.target.value)}
+          placeholder="ใส่เลขบัตรประชาชน 13 หลัก"
+        />
+        <button onClick={handleSearch} className='Search'>
+          ค้นหา
+        </button>
+        {patientData && (
           <button onClick={handleDownload} className='Downloadbtn'>
             📥 ดาวน์โหลดเป็น PDF
           </button>
+        )}
+      </div>
+    </div>
 
-          <div ref={formRef} className="form-container">
-            <img src="/StrokeAwareResultFormAngel.png" alt="Stroke Form" className="form-background" />
+    {/* Centered content */}
+    <div className="center-content">
+      {patientData && (
+        <div ref={formRef} className="form-container">
+          <img src="/StrokeAwareResultFormAngel.png" alt="Stroke Form" className="form-background" />
 
-            {/* Overlaying normal fields */}
-            <div className="overlay name">{patientData.name}</div>
-            <div className="overlay surname">{patientData.surname}</div>
-            <div className="overlay age">{patientData.age}</div>
-            <div className="overlay gender">{patientData.gender}</div>
-            <div className="overlay disease">{patientData.disease}</div>
-            <div className="overlay phone">{patientData.phone}</div>
-            <div className="overlay formDate">{patientData.formDate}</div>
-            <div className="overlay formTime">{patientData.formTime}</div>
-            <div className="overlay TimeFactor">{patientData.TimeFactor}</div>
+          {/* Overlaying normal fields */}
+          <div className="overlay name">{patientData.name}</div>
+          <div className="overlay surname">{patientData.surname}</div>
+          <div className="overlay age">{patientData.age}</div>
+          <div className="overlay gender">{patientData.gender}</div>
+          <div className="overlay disease">{patientData.disease}</div>
+          <div className="overlay phone">{patientData.phone}</div>
+          <div className="overlay formDate">{patientData.formDate}</div>
+          <div className="overlay formTime">{patientData.formTime}</div>
+          <div className="overlay TimeFactor">{patientData.TimeFactor}</div>
 
-            {/* Overlaying ID card split into 13 digits */}
-            {patientData.idCard && patientData.idCard.split('').map((digit, index) => (
-              <div key={index} className={`overlay idcard-digit idcard-${index}`}>
-                {digit}
-              </div>
-            ))}
+          {/* Overlaying ID card split into 13 digits */}
+          {patientData.idCard && patientData.idCard.split('').map((digit, index) => (
+            <div key={index} className={`overlay idcard-digit idcard-${index}`}>
+              {digit}
+            </div>
+          ))}
 
-            {/* BEFAST results: show ✓ in correct column */}
-            {patientData.balanceResult === 'yes' && <div className="overlay checkbox angel-balance-yes">✓</div>}
-            {patientData.balanceResult === 'no' && <div className="overlay checkbox angel-balance-no">✓</div>}
+          {/* BEFAST results: show ✓ in correct column */}
+          {patientData.balanceResult === 'yes' && <div className="overlay checkbox angel-balance-yes">✓</div>}
+          {patientData.balanceResult === 'no' && <div className="overlay checkbox angel-balance-no">✓</div>}
 
+          {patientData.eyeTestResult === 'yes' && <div className="overlay checkbox angel-eye-yes">✓</div>}
+          {patientData.eyeTestResult === 'no' && <div className="overlay checkbox angel-eye-no">✓</div>}
 
-            {patientData.eyeTestResult === 'yes' && <div className="overlay checkbox angel-eye-yes">✓</div>}
-            {patientData.eyeTestResult === 'no' && <div className="overlay checkbox angel-eye-no">✓</div>}
+          {patientData.faceAsymmetryResult === 'yes' && <div className="overlay checkbox angel-face-yes">✓</div>}
+          {patientData.faceAsymmetryResult === 'no' && <div className="overlay checkbox angel-face-no">✓</div>}
 
-            {patientData.faceAsymmetryResult === 'yes' && <div className="overlay checkbox angel-face-yes">✓</div>}
-            {patientData.faceAsymmetryResult === 'no' && <div className="overlay checkbox angel-face-no">✓</div>}
+          {patientData.armResult === 'yes' && <div className="overlay checkbox angel-arm-yes">✓</div>}
+          {patientData.armResult === 'no' && <div className="overlay checkbox angel-arm-no">✓</div>}
 
-            {patientData.armResult === 'yes' && <div className="overlay checkbox angel-arm-yes">✓</div>}
-            {patientData.armResult === 'no' && <div className="overlay checkbox angel-arm-no">✓</div>}
+          {patientData.speechResult === 'yes' && <div className="overlay checkbox angel-speech-yes">✓</div>}
+          {patientData.speechResult === 'no' && <div className="overlay checkbox angel-speech-no">✓</div>}
 
-            {patientData.speechResult === 'yes' && <div className="overlay checkbox angel-speech-yes">✓</div>}
-            {patientData.speechResult === 'no' && <div className="overlay checkbox angel-speech-no">✓</div>}
-          </div>
-        </>
+          {/* Result overlay */}
+          {(() => {
+            const yesCount = [
+              patientData.balanceResult,
+              patientData.eyeTestResult,
+              patientData.faceAsymmetryResult,
+              patientData.armResult,
+              patientData.speechResult,
+            ].filter(val => val === 'yes').length;
+
+            let resultText = '';
+            if (yesCount === 0) resultText = "ปกติไม่มีอาการใดๆ";
+            else if (yesCount === 1) resultText = "มีอาการผิดปกติ";
+            else resultText = "มีอาการรุนแรง ควรพบแพทย์โดยด่วน";
+
+            return <div className="overlay result-text">{resultText}</div>;
+          })()}
+        </div>
       )}
     </div>
-  );
+  </div>
+);
+
 };
 
 export default StrokeFormOverlay;

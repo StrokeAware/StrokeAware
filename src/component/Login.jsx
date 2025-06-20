@@ -26,7 +26,7 @@ export default function Login() {
           confirmButtonText: 'ดำเนินการต่อ',
         });
 
-      navigate("/Inform"); // ⬅️ This should work now
+      navigate("/Inform"); 
   
     } catch (error) {
       console.error("เกิดข้อผิดพลาด:", error.message);
@@ -43,8 +43,10 @@ export default function Login() {
   return (
     <div className='container'>
       <div className='Name'>
-        <div className='Top'>Stroke Aware</div>
-        <div className='Top-1'>แพลตฟอร์มคัดกรองโรคหลอดเลือดสมองจากแบบประเมินและคลื่นไฟฟ้าสมองด้วยปัญญาประดิษฐ์</div>
+        <div className='Top'>Stroke Sight</div>
+        <div className='Top-1'>แพลตฟอร์มคัดกรองโรคหลอดเลือดสมองนอกโรงพยาบาลแบบเชิงรุกด้วย
+        เทคนิคเอซิสผ่านปัญญาประดิษฐ์
+        </div>
       </div>
       <div className='BrainFront-container'>
         <img src={BrainSide} alt='BrainFront' style={{ width: '210px', height: 'auto' }} />

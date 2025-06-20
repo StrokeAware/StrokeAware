@@ -162,7 +162,7 @@ const ArmStrengthTest = () => {
       console.log("Arm test result saved to Firestore");
 
       await Swal.fire({
-        title: 'ทดสอบเสร็จสิ้น',
+        title: 'ประเมินเสร็จสิ้น',
         icon: 'success',
         confirmButtonText: 'ถัดไป'
       });
@@ -310,7 +310,7 @@ const ArmStrengthTest = () => {
           <div className="popup-content" style={{ fontFamily: "Prompt" }}>
             <h2 style={{ fontSize: "35px" }}>วิธีการประเมิน</h2>
             <div className="instruction-steps">
-              <div className="step">1. ยืนหันข้างให้กับกล้อง</div>
+              <div className="step">1. ยืนหันข้าง 70 องศา ให้กับกล้อง</div>
               <div className="step">2. ยกแขนขึ้น 90 องศา</div>
               <div className="step">3. ยกแขนค้างไว้ 10 วินาที</div>
               <div className='ArmRaiseContainer'><img src={ArmRaise} className='ArmRaise' alt="Arm Raise Example" /></div>

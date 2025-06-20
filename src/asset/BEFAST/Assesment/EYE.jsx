@@ -5,6 +5,9 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { firestore  } from '../../../component/auth';
 import EYESpace from './EYESpace.png'
 import { useNavigate } from 'react-router-dom';
+import Audiobutton from "./NarratorAsset/Audiobutton.png";
+import Audiomutebutton from "./NarratorAsset/Audiomutebutton.png";
+import EYEnarrator from "./NarratorAsset/EYEnarrator.mp3"
 
 function EYE() {
   const navigate = useNavigate();
@@ -15,7 +18,13 @@ function EYE() {
   const [missedCount, setMissedCount] = useState(0);
   const [dotsShown, setDotsShown] = useState(0);
   const [countdown, setCountdown] = useState(0); // New state for countdown
+  const [topLeftClick, setTopLeftClick] = useState(0);
+  const [topRightClick, setTopRightClick] = useState(0);
+  const [bottomLeftClick, setBottomLeftClick] = useState(0);
+  const [bottomRightClick, setBottomRightClick] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
 
+  const audioRef = useRef(null);
   const scoreRef = useRef(0);
   const missedCountRef = useRef(0);
   const dotsShownRef = useRef(0);
@@ -57,6 +66,13 @@ function EYE() {
       x: Math.random() * (maxX - minX) + minX,
       y: Math.random() * (maxY - minY) + minY,
     };
+  };
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioRef.current.muted;
+      setIsMuted(audioRef.current.muted);
+    }
   };
 
   const startTest = () => {
@@ -108,6 +124,10 @@ function EYE() {
         eyeTestDotsShown: dotsShownRef.current,
         eyeTestMissed: missedCountRef.current,
         eyeTestClicked: scoreRef.current,
+        topLeftClick,
+        topRightClick,
+        bottomLeftClick,
+        bottomRightClick,
       });
     } catch (err) {
       console.error("Error updating Firebase:", err);
@@ -198,6 +218,12 @@ function EYE() {
   }, [stage]);
 
   useEffect(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch((e) => console.warn("Auto-play failed:", e));
+      }
+    }, []);
+
+  useEffect(() => {
     return () => {
       // Clean up countdown timer when component unmounts
       if (startCountdownRef.current) {
@@ -207,36 +233,69 @@ function EYE() {
   }, []);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space' && currentStimulus) {
-        const updatedQueue = stimulusQueue.current.map(stim =>
-          stim.id === currentStimulus.id ? { ...stim, hit: true } : stim
-        );
-        stimulusQueue.current = updatedQueue;
+  const handleKeyDown = (e) => {
+    if (e.code === 'Space' && currentStimulus) {
+      const { quarter } = currentStimulus;
 
-        setScore(prev => {
-          const updated = prev + 1;
-          scoreRef.current = updated;
-          return updated;
-        });
-
-        setCurrentStimulus(null);
+      switch (quarter) {
+        case 'top-left':
+          setTopLeftClick(c => c + 1);
+          break;
+        case 'top-right':
+          setTopRightClick(c => c + 1);
+          break;
+        case 'bottom-left':
+          setBottomLeftClick(c => c + 1);
+          break;
+        case 'bottom-right':
+          setBottomRightClick(c => c + 1);
+          break;
+        default:
+          break;
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStimulus]);
 
+      const updatedQueue = stimulusQueue.current.map(stim =>
+        stim.id === currentStimulus.id ? { ...stim, hit: true } : stim
+      );
+      stimulusQueue.current = updatedQueue;
+
+      setScore(prev => {
+        const updated = prev + 1;
+        scoreRef.current = updated;
+        return updated;
+      });
+
+      setCurrentStimulus(null);
+    }
+  };
+
+
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [currentStimulus]);
+
+ useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((e) => console.warn("Auto-play failed:", e));
+    }
+  }, []);
   return (
     <div className="container">
       {stage === 'notice' && (
-        <div className="notice" style={{ fontFamily: "Prompt", marginTop: "60px", width:"620px" }}>
-          <div className='EYEheader' style={{fontSize:"75px"}}>วิธีการประเมิน</div>
+        <div className="notice" style={{ fontFamily: "Prompt", marginTop: "40px", width:"880px" }}>
+          <div className='EYEheader' style={{fontSize:"70px"}}>แบบประเมินสายตา</div>
+          <h2 style={{ fontSize: "35px", textDecoration:"underline" }}>วิธีการประเมิน</h2>
           <div className='steps' style={{fontSize:"22px", textAlign:"left", marginLeft:"20px",color: "#787878"}}>
-          <p>1. นั่งหน้าตรงเข้าหาหน้าจอ ห่างจากหน้าจอ 46 เซนติเมตร</p>
-          <p>2. จ้องจุดสีเขียวกลางหน้าจอตลอดเวลาขณะทำการประเมิน</p>
-          <p>3. หากเห็นจุดสีขาวขึ้นบนหน้าจอ ให้กด "Space Bar"</p>
+            <p>1. นั่งหน้าตรงเข้าหาหน้าจอ ห่างจากหน้าจอ ครึ่งแขน</p>
+            <p>2. จ้องจุดสีเขียวกลางหน้าจอตลอดเวลาขณะทำการประเมิน</p>
+            <p>3. หากเห็นจุดสีขาวขึ้นบนหน้าจอ ให้กด "Space Bar"</p>
           </div>
+             
+            <audio ref={audioRef} src={EYEnarrator} autoPlay />
+            <button onClick={toggleMute} className="ismutepicEYE" style={{ background: "none", border: "none" }}>
+              <img src={isMuted ? Audiobutton : Audiomutebutton} style={{ width: "50px", height: "auto" }} alt="Audio Toggle" />
+            </button>
+          
           <img src={EYESpace} style={{ height: "180px", width: "auto", marginBottom: "20px" }} />
           <h2 style={{ fontSize: "25px", color: "red" }}>⚠️ คำเตือน ⚠️</h2>
           <p style={{ fontSize: "25px" }}>หากรู้สึกเวียนหัว โปรดหยุดใช้งานทันที</p>

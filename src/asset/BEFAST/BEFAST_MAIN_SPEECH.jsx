@@ -19,7 +19,7 @@ export function BEFAST_MAIN_SPEECH () {
             B E F A S T
         </div>
         <div className="StrokeAwareTopRight">
-                              Stroke Aware
+                              Stroke Sight
                               <img src={plus} style={{marginLeft:"20px", marginBottom:"2px"}}></img>
                             </div>
         <div className="d-flex justify-content-center gap-4 mt-4 BoxContainer">
@@ -37,7 +37,7 @@ export function BEFAST_MAIN_SPEECH () {
                     <Link to="/Speech"className="insideStart">เริ่มทำ</Link>
             </div>
         </div>
-        <Link to="/BEFAST_MAIN_TIME" className='login'>next</Link>
+        {/* <Link to="/BEFAST_MAIN_TIME" className='login'>next</Link> */}
         {patientName && (
             <div style={{
               position: 'fixed',

@@ -19,7 +19,7 @@ export function BEFAST_MAIN_EYES () {
             B E F A S T
         </div>
         <div className="StrokeAwareTopRight">
-                        Stroke Aware
+                        Stroke Sight
                         <img src={plus} style={{marginLeft:"20px", marginBottom:"2px"}}></img>
                       </div>
         <div className="d-flex justify-content-center gap-4 mt-4 BoxContainer">
@@ -30,7 +30,7 @@ export function BEFAST_MAIN_EYES () {
               </div>
               
               <div className="insideTitleTH" style={{fontFamily:"Prompt", fontSize:"20px"}}>
-              การมองเห็น การตอบสนองของตา
+              การมองเห็น การตอบสนองของตา Visual Field Defect (การตรวจลานสายตา)
               </div>
               <div className="image-container">
                   <img src={EYEcomponent} className="centerpictureMAIN1"></img>
@@ -39,7 +39,7 @@ export function BEFAST_MAIN_EYES () {
               <Link to="/EYE"className="insideStart">เริ่มทำ</Link>
             </div>
         </div>
-        <Link to="/BEFAST_MAIN_FACE" className='login'>next</Link>
+        <Link to="/BEFAST_MAIN_EYES2" className='login'>next</Link>
         {patientName && (
             <div style={{
               position: 'fixed',

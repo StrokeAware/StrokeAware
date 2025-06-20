@@ -5,6 +5,7 @@ import Otp from './asset/Otp/Otp'
 import { Inform } from './component/Inform';
 import {BEFAST_MAIN_BALANCE} from './asset/BEFAST/BEFAST_MAIN_BALANCE'
 import {BEFAST_MAIN_EYES} from './asset/BEFAST/BEFAST_MAIN_EYES'
+import {BEFAST_MAIN_EYES2} from './asset/BEFAST/BEFAST_MAIN_EYES2'
 import {BEFAST_MAIN_FACE} from './asset/BEFAST/BEFAST_MAIN_FACE'
 import {BEFAST_MAIN_ARM} from './asset/BEFAST/BEFAST_MAIN_ARM'
 import {BEFAST_MAIN_SPEECH} from './asset/BEFAST/BEFAST_MAIN_SPEECH'
@@ -21,6 +22,7 @@ import SearchByIdCard from './component/SearchPatient.jsx';
 import Hospital from './asset/BEFAST/Assesment/Hospital.jsx';
 import SearchByIdCardAngel from './component/SearchPatientAngel.jsx';
 import DoctorDashboard from './component/Dashboard.jsx';
+import Gaze from './asset/BEFAST/Assesment/GazeTest.jsx';
 
 import {
   BrowserRouter as Router,
@@ -63,6 +65,10 @@ function App() {
         <Route
                         path="/BEFAST_MAIN_EYES"
                         element={<BEFAST_MAIN_EYES/>}
+                    />
+        <Route
+                        path="/BEFAST_MAIN_EYES2"
+                        element={<BEFAST_MAIN_EYES2/>}
                     />
         <Route
                         path="/BEFAST_MAIN_FACE"
@@ -127,6 +133,10 @@ function App() {
         <Route
                         path="/DoctorDashboard"
                         element={<DoctorDashboard/>}
+                    />
+        <Route
+                        path="/Gaze"
+                        element={<Gaze/>}
                     />
       </Routes>
     </Router>

@@ -21,7 +21,7 @@ export function BEFAST_MAIN_BALANCE () {
       </div>
       <div className="StrokeAwareRightTopContainer">
         <div className="StrokeAwareTopRight">
-          Stroke Aware
+          Stroke Sight
           <img src={plus} style={{marginLeft:"20px", marginBottom:"2px"}}></img>
         </div>
       </div>

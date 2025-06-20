@@ -1,280 +1,364 @@
-import React, { useRef, useEffect, useState } from 'react';
-import * as faceapi from 'face-api.js';
-import { doc, setDoc } from 'firebase/firestore';
-import {firestore } from '../../../component/auth';
-import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import './FaceAsymmetry.css';
+import React, { useEffect, useRef, useState } from "react";
+import * as faceapi from "face-api.js";
+import { doc, setDoc } from "firebase/firestore";
+import { firestore } from "../../../component/auth";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import "./FaceAsymmetry.css";
 
-const FaceAsymmetry = () => {
+// ── Config ──────────────────────────────────────────────────────────────
+const LOCAL_PATH_ROOT = "/models";
+const LOCAL_PATH_BASE = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.BASE_URL)
+  ? import.meta.env.BASE_URL
+  : (process.env.PUBLIC_URL || "/");
+const PUBLIC_URL = process.env.PUBLIC_URL ?? "";
+
+const MIRRORS = [
+  "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model",
+  "https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js/weights",
+];
+
+const MANIFEST_NAME = "face_landmark_68_model-weights_manifest.json";
+
+const DETECTOR_OPTS = new faceapi.SsdMobilenetv1Options({
+  minConfidence: 0.6,
+  maxResults: 1,
+});
+
+export default function FaceAsymmetry() {
   const navigate = useNavigate();
-  const videoRef = useRef();
-  const canvasRef = useRef();
-  const [asymmetryScore, setAsymmetryScore] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [countdown, setCountdown] = useState(3);
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [isFaceInFrame, setIsFaceInFrame] = useState(false);
-  const [hasCompleted, setHasCompleted] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [countdown, setCountdown] = useState(0); // 0 = no countdown
   const countdownRef = useRef(null);
-  const detectionIntervalRef = useRef(null);
 
+  const [loading, setLoading] = useState(true);
+  const [detecting, setDetecting] = useState(false);
+  const [faceCentered, setFaceCentered] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [imageCaptured, setImageCaptured] = useState(false);
+
+  const loopRef = useRef(null);
+  
+  // ── Lifecycle ────────────────────────────────────────────────────────
   useEffect(() => {
-    // Check for patient ID at the start
     const patientId = localStorage.getItem("patientId");
     if (!patientId) {
       navigate('/patientDetail');
       return;
     }
-
-    const startVideo = () => {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-        .then((stream) => {
-          videoRef.current.srcObject = stream;
-        })
-        .catch((err) => {
-          console.error("Error accessing camera:", err);
-          Swal.fire('Error', 'Cannot access camera', 'error');
-        });
-    };
-
-    const loadModels = async () => {
+    (async () => {
       try {
-        setIsLoading(true);
-        const MODEL_URL = '/models';
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-        ]);
-        startVideo();
-      } catch (error) {
-        console.error("Error loading models:", error);
-        Swal.fire('Error', 'Failed to load face detection models', 'error');
+        setLoading(true);
+        const baseUrl = await resolveModelBaseUrl();
+        await loadModels(baseUrl);
+        await startCamera();
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error", err.message, "error");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
+    })();
+    return () => stopEverything();
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // First effect: load models only
+useEffect(() => {
+  const patientId = localStorage.getItem("patientId");
+  if (!patientId) {
+    navigate('/patientDetail');
+    return;
+  }
+  (async () => {
+    try {
+      setLoading(true);
+      const baseUrl = await resolveModelBaseUrl();
+      await loadModels(baseUrl);
+      // DO NOT call startCamera() here!
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", err.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  })();
+  return () => stopEverything();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
-    loadModels();
+// New effect: actually start camera only after <video> is mounted and loading is done
+useEffect(() => {
+  if (!loading && videoRef.current) {
+    startCamera();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [loading, videoRef]);
 
-    return () => {
-      stopCamera();
-      clearCountdown();
-      clearDetectionInterval();
-    };
-  }, [navigate]);
+  // ── Model loader with path probing ────────────────────────────────────
+  const resolveModelBaseUrl = async () => {
+    const candidates = [
+      LOCAL_PATH_ROOT,
+      `${LOCAL_PATH_BASE}models`,
+      `${PUBLIC_URL}/models`,
+      ...MIRRORS,
+    ];
+    for (const url of candidates) {
+      const probeUrl = `${url.replace(/\/$/, "")}/${MANIFEST_NAME}`;
+      try {
+        const r = await fetch(probeUrl, { method: "HEAD" });
+        if (r.ok) {
+          console.info(`✅ face‑api models found at ${url}`);
+          return url;
+        }
+      } catch (_) {}
+    }
+    throw new Error(
+      "Failed to locate face‑recognition models. Ensure /models exists or allow internet to fetch CDN weights."
+    );
+  };
 
-  const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-      videoRef.current.srcObject = null;
+  const loadModels = (baseUrl) =>
+    Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri(baseUrl),
+      faceapi.nets.faceLandmark68Net.loadFromUri(baseUrl),
+    ]);
+
+  // ── Camera helpers ────────────────────────────────────────────────────
+  const startCamera = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: "user" },
+    });
+    let retries = 0;
+    while (!videoRef.current && retries < 10) {
+      await new Promise(res => setTimeout(res, 50));
+      retries++;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+    } else {
+      throw new Error("Camera error: video element not ready.");
     }
   };
 
-  const clearCountdown = () => {
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = null;
-    }
+  const stopEverything = () => {
+  if (videoRef.current?.srcObject) {
+    videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+    videoRef.current.srcObject = null; // Optionally clear
+  }
+  clearInterval(loopRef.current);
+  loopRef.current = null;
+};
+
+  // ── Geometry helpers ──────────────────────────────────────────────────
+  const deg = (rad) => (rad * 180) / Math.PI;
+  const eyeCenter = (lms, idx) => {
+    const pts = idx.map((i) => lms[i]);
+    return {
+      x: pts.reduce((s, p) => s + p.x, 0) / pts.length,
+      y: pts.reduce((s, p) => s + p.y, 0) / pts.length,
+    };
+  };
+  const headRoll = (lms) => {
+    const L = eyeCenter(lms, [36, 37, 38, 39, 40, 41]);
+    const R = eyeCenter(lms, [42, 43, 44, 45, 46, 47]);
+    return deg(Math.atan2(R.y - L.y, R.x - L.x));
+  };
+
+  const PAIRS = [
+    [17, 26], [18, 25], [19, 24], [20, 23], [21, 22],
+    [36, 45], [39, 42], [37, 44], [40, 47], [31, 35],
+    [48, 54], [49, 53], [50, 52], [61, 63], [62, 66],
+  ];
+
+  const symmetryScore = (lms) => {
+    const nose = lms[30];
+    const sum = PAIRS.reduce((acc, [l, r]) => {
+      const L = lms[l];
+      const R = lms[r];
+      return acc + Math.hypot(L.x - (2 * nose.x - R.x), L.y - R.y);
+    }, 0);
+    const iod = Math.hypot(lms[36].x - lms[45].x, lms[36].y - lms[45].y);
+    return sum / PAIRS.length / iod;
+  };
+
+  // ── Live preview loop + auto-capture ─────────────────────────────────
+  const onPlay = () => {
+    if (loopRef.current) clearInterval(loopRef.current);
+    loopRef.current = setInterval(async () => {
+      if (detecting || finished || imageCaptured) return;
+      if (!canvasRef.current || !videoRef.current) return;
+
+      const det = await faceapi
+        .detectSingleFace(videoRef.current, DETECTOR_OPTS)
+        .withFaceLandmarks();
+
+      if (!canvasRef.current || !videoRef.current) return;
+
+      const dim = faceapi.matchDimensions(canvasRef.current, videoRef.current, true);
+      const ctx = canvasRef.current.getContext("2d");
+      ctx.clearRect(0, 0, dim.width, dim.height);
+
+      if (det) {
+        const resized = faceapi.resizeResults(det, dim);
+        faceapi.draw.drawFaceLandmarks(canvasRef.current, resized);
+
+        // centre & size check
+        const box = resized.detection.box;
+        const centreOK =
+          Math.abs(box.x + box.width / 2 - dim.width / 2) < 50 &&
+          Math.abs(box.y + box.height / 2 - dim.height / 2) < 50 &&
+          box.width > 160;
+        setFaceCentered(centreOK);
+
+        // === AUTO-CAPTURE ===
+        if (centreOK && !detecting && !imageCaptured) {
+  setFaceCentered(true);
+  // Start countdown if not already started
+  if (countdown === 0 && !countdownRef.current) {
     setCountdown(3);
-  };
-
-  const clearDetectionInterval = () => {
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
-      detectionIntervalRef.current = null;
-    }
-  };
-
-  const startCountdown = () => {
-    clearCountdown();
-    setIsDetecting(true);
     countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearCountdown();
-          captureAndAnalyze();
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
+          setCountdown(0);
+          setImageCaptured(true);
+          captureAndAnalyze(); // AUTO-CAPTURE!
           return 0;
         }
-        return prev - 1;
+        return c - 1;
       });
     }, 1000);
+  }
+} else {
+  setFaceCentered(false);
+  // Cancel countdown if user moves out
+  if (countdownRef.current) {
+    clearInterval(countdownRef.current);
+    countdownRef.current = null;
+    setCountdown(0);
+  }
+}
+
+      } else {
+        setFaceCentered(false);
+      }
+    }, 250);
   };
 
   const captureAndAnalyze = async () => {
-    if (!videoRef.current || hasCompleted) return;
-
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoRef.current, 0, 0);
-
-      const detections = await faceapi
-        .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks(true);
-
-      if (detections) {
-        const landmarks = detections.landmarks.positions;
-        const nose = landmarks[30];
-        const pairs = [[36, 45], [39, 42], [31, 35], [48, 54], [2, 14]];
-        let totalDiff = 0;
-
-        pairs.forEach(([leftIdx, rightIdx]) => {
-          const left = landmarks[leftIdx];
-          const right = landmarks[rightIdx];
-          const mirroredRightX = 2 * nose.x - right.x;
-          const dx = left.x - mirroredRightX;
-          const dy = left.y - right.y;
-          totalDiff += Math.sqrt(dx * dx + dy * dy);
-        });
-
-        const averageDiff = (totalDiff / pairs.length).toFixed(2);
-        setAsymmetryScore(averageDiff);
-        stopCamera();
-
-        await saveToFirebase(averageDiff > 5 ? 'yes' : 'no');
-        setHasCompleted(true);
-        showResultAlert();
-      }
-    } catch (error) {
-      console.error("Error in face analysis:", error);
-      Swal.fire('Error', 'Failed to analyze face', 'error');
-    } finally {
-      setIsDetecting(false);
+    setDetecting(true);
+    // 1. Capture current frame to a temp canvas
+    const video = videoRef.current;
+    if (!video) {
+      setDetecting(false);
+      setImageCaptured(false);
+      return;
     }
-  };
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = video.videoWidth;
+    tempCanvas.height = video.videoHeight;
+    tempCanvas.getContext("2d").drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
 
-  const saveToFirebase = async (result) => {
-    try {
-      const patientId = localStorage.getItem("patientId");
-      if (!patientId) {
-        navigate('/patientDetail');
-        return;
-      }
+    // 2. Analyze the static image
+    const det = await faceapi
+      .detectSingleFace(tempCanvas, DETECTOR_OPTS)
+      .withFaceLandmarks();
 
-      await setDoc(doc(firestore , "patients_topform", patientId), {
-        faceAsymmetryResult: result,
-        lastUpdated: new Date().toISOString()
-      }, { merge: true });
-    } catch (err) {
-      console.error("Error saving to Firebase:", err);
-      Swal.fire('Error', 'Failed to save results', 'error');
+    if (!det) {
+      setDetecting(false);
+      Swal.fire("Error", "ไม่สามารถวิเคราะห์ภาพได้ กรุณาลองใหม่", "error");
+      setImageCaptured(false); // allow retry
+      return;
     }
-  };
+    // 3. Calculate symmetry
+    const lms = det.landmarks.positions;
+    const score = symmetryScore(lms);
+    const flag = score > 0.15 ? "yes" : "no";
+    await saveToFirebase(score, flag);
 
-  const showResultAlert = () => {
+    setFinished(true);
+    setDetecting(false);
+
     Swal.fire({
-      title: 'การประเมินเสร็จสิ้น',
-      icon: 'success',
-      confirmButtonText: 'ถัดไป',
+      title: "ประเมินเสร็จสิ้น",
+      icon: "success",
+      confirmButtonText: "ถัดไป",
       allowOutsideClick: false,
-    }).then(() => {
-      navigate('/BEFAST_MAIN_ARM');
-    });
+    }).then(() => navigate("/BEFAST_MAIN_ARM"));
   };
 
-  const handleVideoPlay = () => {
-    if (hasCompleted) return;
-    clearDetectionInterval();
-
-    detectionIntervalRef.current = setInterval(async () => {
-      if (!videoRef.current || !canvasRef.current || isDetecting || hasCompleted) return;
-
-      try {
-        const detections = await faceapi
-          .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks(true);
-
-        const dims = faceapi.matchDimensions(canvasRef.current, videoRef.current, true);
-        canvasRef.current.getContext('2d').clearRect(0, 0, dims.width, dims.height);
-
-        if (detections) {
-          const resized = faceapi.resizeResults(detections, dims);
-          faceapi.draw.drawFaceLandmarks(canvasRef.current, resized);
-
-          const faceBox = resized.detection.box;
-          const frameCenterX = dims.width / 2;
-          const frameCenterY = dims.height / 2;
-          const faceCenterX = faceBox.x + faceBox.width / 2;
-          const faceCenterY = faceBox.y + faceBox.height / 2;
-
-          const isCentered =
-            Math.abs(faceCenterX - frameCenterX) < 50 &&
-            Math.abs(faceCenterY - frameCenterY) < 50 &&
-            faceBox.width > 150;
-
-          setIsFaceInFrame(isCentered);
-
-          if (isCentered && !isDetecting && !countdownRef.current && !hasCompleted) {
-            startCountdown();
-          } else if (!isCentered && countdownRef.current) {
-            clearCountdown();
-            setIsDetecting(false);
-          }
-        } else {
-          setIsFaceInFrame(false);
-          if (countdownRef.current) {
-            clearCountdown();
-            setIsDetecting(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error in face detection:", error);
-      }
-    }, 300);
+  const saveToFirebase = async (score, flag) => {
+    try {
+      const pid = localStorage.getItem("patientId");
+      if (!pid) return navigate("/patientDetail");
+      await setDoc(
+        doc(firestore, "patients_topform", pid),
+        {
+          faceAsymmetryScore: score.toFixed(3),
+          faceAsymmetryResult: flag,
+          lastUpdated: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Error", "Failed to save result", "error");
+    }
   };
 
+  // --- The rest: Render/JSX
   return (
     <div className="face-asymmetry-container">
-      <div className="face-asymmetry-title" style={{ color: "#b897ff" }}>
+      <h2 className="face-asymmetry-title" style={{ color: "#b897ff" }}>
         แบบประเมินวิเคราะห์ความปกติของใบหน้า
-      </div>
+      </h2>
 
-      {isLoading ? (
+      {loading ? (
         <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Loading facial recognition models...</p>
+          <div className="spinner" />
+          <p>Loading facial-recognition models…</p>
         </div>
       ) : (
         <>
           <div className="video-canvas-wrapper">
-            {!hasCompleted && (
+            {!finished && (
               <>
                 <video
                   ref={videoRef}
                   autoPlay
                   muted
-                  onPlay={handleVideoPlay}
+                  onPlay={onPlay}
                   className="video-element"
                 />
                 <canvas ref={canvasRef} className="canvas-overlay" />
                 <div className="capture-frame">
-                  <div className="frame-border"></div>
-                  {isDetecting && isFaceInFrame && (
+                  <div className="frame-border" />
+                  {faceCentered && countdown > 0 && (
                     <div className="countdown-overlay">
                       <div className="countdown-circle">{countdown}</div>
-                      <p>โปรดอย่าขยับ</p>
+                      <p>กรุณาอยู่นิ่ง ระบบจะถ่ายรูปใน {countdown}…</p>
                     </div>
                   )}
+
                 </div>
               </>
             )}
           </div>
-
           <div className="instructions">
-            {!hasCompleted ? (
+            {!finished ? (
               <>
-                <p style={{ marginTop: "20px" }}>1. โปรดนำหน้าเข้าในกรอบสี่เหลี่ยม</p>
-                <p>2. อยู่กับที่เป็นเวลา 3 วินาที จนนับถอยหลังเสร็จ</p>
-                {isFaceInFrame && !isDetecting && (
-                  <p className="face-detected">พบใบหน้า! กรุณาอยู่นิ่ง...</p>
+                <p style={{ marginTop: 20 }}>1. โปรดนำหน้าเข้าในกรอบสี่เหลี่ยม</p>
+                <p>2. อยู่นิ่ง ระบบจะถ่ายรูปอัตโนมัติ</p>
+                {faceCentered && !detecting && !imageCaptured && (
+                  <p className="face-detected">พบใบหน้า! กรุณาอยู่นิ่ง…</p>
                 )}
               </>
             ) : (
-              <p className="assessment-complete" style={{ marginTop: "20px" }}>
-                กำลังแสดงผลลัพธ์...
+              <p className="assessment-complete" style={{ marginTop: 20 }}>
+                กำลังแสดงผลลัพธ์…
               </p>
             )}
           </div>
@@ -282,6 +366,4 @@ const FaceAsymmetry = () => {
       )}
     </div>
   );
-};
-
-export default FaceAsymmetry;
+}

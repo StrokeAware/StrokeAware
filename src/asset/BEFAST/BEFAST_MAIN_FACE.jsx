@@ -18,7 +18,7 @@ export function BEFAST_MAIN_FACE () {
         B E F A S T
       </div>
       <div className="StrokeAwareTopRight">
-        Stroke Aware
+        Stroke Sight
         <img src={plus} style={{ marginLeft: "20px", marginBottom: "2px" }} alt="plus icon" />
       </div>
 
